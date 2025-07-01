@@ -4,11 +4,12 @@ from dotenv import load_dotenv
 import openai
 import os
 
-# Load environment variables from .env file
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, origins=["*"])  # Change to your frontend domain in production
+CORS(app, origins=["*"])
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 users = {}
 
@@ -35,14 +36,13 @@ def login():
         return jsonify({"message": "Login successful"}), 200
     return jsonify({"error": "Invalid credentials"}), 401
 
-# Set OpenAI API Key securely
-import os
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
-    message = data.get("message")
+    message = data.get("message", "").strip()
+
+    if not message:
+        return jsonify({"response": "Please enter a valid message."}), 400
 
     prompt = f"""
 You are a helpful and knowledgeable AI finance assistant.
@@ -56,7 +56,8 @@ Assistant:"""
             engine="text-davinci-003",
             prompt=prompt,
             max_tokens=150,
-            temperature=0.7
+            temperature=0.7,
+            n=1
         )
         reply = response.choices[0].text.strip()
         return jsonify({"response": reply})
