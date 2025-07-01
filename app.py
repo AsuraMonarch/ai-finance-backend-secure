@@ -4,12 +4,20 @@ from dotenv import load_dotenv
 import openai
 import os
 
+
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app, origins=["*"])
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# Load environment variables from .env file
+load_dotenv()
+
+app = Flask(__name__)
+CORS(app, origins=["*"])  # Change to your frontend domain in production
+>>>>>>> 6ec0b61 (Secure OpenAI integration with .env)
 
 users = {}
 
@@ -36,6 +44,10 @@ def login():
         return jsonify({"message": "Login successful"}), 200
     return jsonify({"error": "Invalid credentials"}), 401
 
+# Set OpenAI API Key securely
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+>>>>>>> 6ec0b61 (Secure OpenAI integration with .env)
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
@@ -56,8 +68,11 @@ Assistant:"""
             engine="text-davinci-003",
             prompt=prompt,
             max_tokens=150,
+
             temperature=0.7,
             n=1
+            temperature=0.7
+ (Secure OpenAI integration with .env)
         )
         reply = response.choices[0].text.strip()
         return jsonify({"response": reply})
