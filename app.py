@@ -45,6 +45,7 @@ def login():
     return jsonify({"error": "Invalid credentials"}), 401
 
 # Set OpenAI API Key securely
+import os
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 >>>>>>> 6ec0b61 (Secure OpenAI integration with .env)
