@@ -4,22 +4,17 @@ from dotenv import load_dotenv
 import openai
 import os
 
+# Load environment variables
 load_dotenv()
 
+# Initialize Flask app
 app = Flask(__name__)
-CORS(app, origins=["*"])
+CORS(app, origins=["*"])  # Set to frontend domain in production
 
+# Set OpenAI API Key
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Load environment variables
-(Refactor: Add chatbot logic, .gitignore, and project README)
-load_dotenv()
-
-app = Flask(__name__)
-CORS(app, origins=["*"])  # Change to your frontend domain in production
-(Secure OpenAI integration with .env)
-
-# In-memory user store (for testing/demo only)
+# In-memory user store (for testing only)
 users = {}
 
 @app.route("/")
@@ -45,21 +40,7 @@ def login():
         return jsonify({"message": "Login successful"}), 200
     return jsonify({"error": "Invalid credentials"}), 401
 
-# Set OpenAI API key
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
-(Secure OpenAI integration with .env)
-@app.route("/chat", methods=["POST"])
-def chat():
-    data = request.get_json()
-    message = data.get("message", "").strip()
-
-    if not message:
-        return jsonify({"response": "Please enter a valid message."}), 400
-
-
 def generate_response(message):
-(Refactor: Add chatbot logic, .gitignore, and project README)
     prompt = f"""
 You are a helpful and knowledgeable AI finance assistant.
 Provide personalized budgeting advice and money-saving tips when the user asks finance-related questions.
@@ -71,11 +52,9 @@ Assistant:"""
             engine="text-davinci-003",
             prompt=prompt,
             max_tokens=150,
-
             temperature=0.7,
-            n=1
-            temperature=0.7
- (Secure OpenAI integration with .env)
+            n=1,
+            stop=None
         )
         return response.choices[0].text.strip()
     except Exception as e:
