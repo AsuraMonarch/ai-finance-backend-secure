@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Ignore environment files
 .env
 .env.txt
@@ -9,3 +10,15 @@ __pycache__/
 # Ignore system files
 .DS_Store
 Thumbs.db
+=======
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+.idea/
+.vscode/
+.DS_Store
+>>>>>>> 6d89ca5 (Refactor: Add chatbot logic, .gitignore, and project README)

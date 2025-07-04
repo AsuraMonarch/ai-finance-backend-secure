@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 import openai
 import os
 
-
 load_dotenv()
 
 app = Flask(__name__)
@@ -12,13 +11,15 @@ CORS(app, origins=["*"])
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Load environment variables from .env file
+# Load environment variables
+>>>>>>> 6d89ca5 (Refactor: Add chatbot logic, .gitignore, and project README)
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app, origins=["*"])  # Change to your frontend domain in production
 >>>>>>> 6ec0b61 (Secure OpenAI integration with .env)
 
+# In-memory user store (for testing/demo only)
 users = {}
 
 @app.route("/")
@@ -44,10 +45,10 @@ def login():
         return jsonify({"message": "Login successful"}), 200
     return jsonify({"error": "Invalid credentials"}), 401
 
-# Set OpenAI API Key securely
-import os
+# Set OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+<<<<<<< HEAD
 >>>>>>> 6ec0b61 (Secure OpenAI integration with .env)
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -57,13 +58,15 @@ def chat():
     if not message:
         return jsonify({"response": "Please enter a valid message."}), 400
 
+=======
+def generate_response(message):
+>>>>>>> 6d89ca5 (Refactor: Add chatbot logic, .gitignore, and project README)
     prompt = f"""
 You are a helpful and knowledgeable AI finance assistant.
 Provide personalized budgeting advice and money-saving tips when the user asks finance-related questions.
 
 User: {message}
 Assistant:"""
-
     try:
         response = openai.Completion.create(
             engine="text-davinci-003",
@@ -75,7 +78,18 @@ Assistant:"""
             temperature=0.7
  (Secure OpenAI integration with .env)
         )
-        reply = response.choices[0].text.strip()
-        return jsonify({"response": reply})
+        return response.choices[0].text.strip()
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return f"Error: {str(e)}"
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    user_msg = request.json.get("message", "").strip()
+    if not user_msg:
+        return jsonify(reply="Please enter a valid message."), 400
+
+    response = generate_response(user_msg)
+    return jsonify(reply=response)
+
+if __name__ == "__main__":
+    app.run(debug=True)
