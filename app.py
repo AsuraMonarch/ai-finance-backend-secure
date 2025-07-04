@@ -12,12 +12,12 @@ CORS(app, origins=["*"])
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Load environment variables
->>>>>>> 6d89ca5 (Refactor: Add chatbot logic, .gitignore, and project README)
+(Refactor: Add chatbot logic, .gitignore, and project README)
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app, origins=["*"])  # Change to your frontend domain in production
->>>>>>> 6ec0b61 (Secure OpenAI integration with .env)
+(Secure OpenAI integration with .env)
 
 # In-memory user store (for testing/demo only)
 users = {}
@@ -48,8 +48,7 @@ def login():
 # Set OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-<<<<<<< HEAD
->>>>>>> 6ec0b61 (Secure OpenAI integration with .env)
+(Secure OpenAI integration with .env)
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
@@ -58,9 +57,9 @@ def chat():
     if not message:
         return jsonify({"response": "Please enter a valid message."}), 400
 
-=======
+
 def generate_response(message):
->>>>>>> 6d89ca5 (Refactor: Add chatbot logic, .gitignore, and project README)
+(Refactor: Add chatbot logic, .gitignore, and project README)
     prompt = f"""
 You are a helpful and knowledgeable AI finance assistant.
 Provide personalized budgeting advice and money-saving tips when the user asks finance-related questions.
