@@ -40,25 +40,21 @@ def login():
         return jsonify({"message": "Login successful"}), 200
     return jsonify({"error": "Invalid credentials"}), 401
 
+# Generate response using OpenAI chat completion
 def generate_response(message):
-    prompt = f"""
-You are a helpful and knowledgeable AI finance assistant.
-Provide personalized budgeting advice and money-saving tips when the user asks finance-related questions.
-
-User: {message}
-Assistant:"""
     try:
         response = openai.chat.completions.create(
-    model="gpt-3.5-turbo",  # or "gpt-4"
-    messages=[
-        {"role": "system", "content": "You are a helpful and knowledgeable AI finance assistant."},
-        {"role": "user", "content": message}
-    ],
-    temperature=0.7,
-    max_tokens=150
-)
-
-reply = response.choices[0].message.content.strip()
+            model="gpt-3.5-turbo",  # Or "gpt-4"
+            messages=[
+                {"role": "system", "content": "You are a helpful and knowledgeable AI finance assistant."},
+                {"role": "user", "content": message}
+            ],
+            temperature=0.7,
+            max_tokens=150
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 @app.route("/chat", methods=["POST"])
 def chat():
