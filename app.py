@@ -48,17 +48,17 @@ Provide personalized budgeting advice and money-saving tips when the user asks f
 User: {message}
 Assistant:"""
     try:
-        response = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt=prompt,
-            max_tokens=150,
-            temperature=0.7,
-            n=1,
-            stop=None
-        )
-        return response.choices[0].text.strip()
-    except Exception as e:
-        return f"Error: {str(e)}"
+        response = openai.chat.completions.create(
+    model="gpt-3.5-turbo",  # or "gpt-4"
+    messages=[
+        {"role": "system", "content": "You are a helpful and knowledgeable AI finance assistant."},
+        {"role": "user", "content": message}
+    ],
+    temperature=0.7,
+    max_tokens=150
+)
+
+reply = response.choices[0].message.content.strip()
 
 @app.route("/chat", methods=["POST"])
 def chat():
