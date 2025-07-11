@@ -55,6 +55,20 @@ def login():
 
     return jsonify(message="Login successful.", token=token), 200
 
+@app.route("/transactions", methods=["GET"])
+def get_transactions():
+    return jsonify([
+        {"date": "2025-07-10", "amount": 5000},
+        {"date": "2025-07-11", "amount": 2500},
+        {"date": "2025-07-12", "amount": 7000}
+    ])
+
+@app.route("/insights", methods=["GET"])
+def get_insights():
+    return jsonify({
+        "prediction": "You may exceed your weekly budget by ₦5,000."
+    })
+
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
