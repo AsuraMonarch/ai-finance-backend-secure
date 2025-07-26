@@ -3,27 +3,39 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 import openai
 import os
-import uuid  # to create dummy tokens
+import jwt
+import datetime
+from functools import wraps
 
-# Define your admin user
-ADMIN_USERNAME = "Godwin"
-
-# Load environment variables from .env
+# Load environment variables
 load_dotenv()
-
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
-
+CORS(app)
 openai.api_key = os.getenv("OPENAI_API_KEY")
+JWT_SECRET = os.getenv("JWT_SECRET") or "my-secret"  # Make sure to set in your .env
 
-# Updated user store
+# Dummy user store (replace with DB in production)
 users = {
     "Godwin": {
         "password": "admin123",
         "is_admin": True
     }
 }
-sessions = {}  # token -> username
+
+# JWT authentication decorator
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get("Authorization")
+        if not token:
+            return jsonify({"message": "Token is missing"}), 403
+        try:
+            decoded = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+            request.user = decoded
+        except Exception:
+            return jsonify({"message": "Token is invalid"}), 403
+        return f(*args, **kwargs)
+    return decorated
 
 @app.route("/")
 def index():
@@ -36,16 +48,19 @@ def signup():
     password = data.get("password", "").strip()
 
     if not username or not password:
-        return jsonify(error="Username and password are required."), 400
+        return jsonify(error="Username and password required."), 400
     if username in users:
         return jsonify(error="User already exists."), 400
 
     users[username] = {"password": password, "is_admin": False}
 
-    token = str(uuid.uuid4())
-    sessions[token] = username
+    token = jwt.encode({
+        "username": username,
+        "role": "user",
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(days=1)
+    }, JWT_SECRET, algorithm="HS256")
 
-    return jsonify(message="Signup successful.", token=token, is_admin=False), 201
+    return jsonify(message="Signup successful", token=token, is_admin=False), 201
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -53,44 +68,32 @@ def login():
     username = data.get("username", "").strip()
     password = data.get("password", "").strip()
 
-    if not username or not password:
-        return jsonify(error="Username and password are required."), 400
-
     user = users.get(username)
-    if not user or user["password"] != password:
-        return jsonify(error="Invalid credentials."), 401
+    if user and user["password"] == password:
+        token = jwt.encode({
+            "username": username,
+            "role": "admin" if user["is_admin"] else "user",
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(days=1)
+        }, JWT_SECRET, algorithm="HS256")
 
-    token = str(uuid.uuid4())
-    sessions[token] = username
+        return jsonify(message="Login successful", token=token, is_admin=user["is_admin"])
 
-    return jsonify(message="Login successful.", token=token, is_admin=user["is_admin"]), 200
-
-@app.route("/user/profile", methods=["GET"])
-def user_profile():
-    token = request.headers.get("Authorization")
-    username = sessions.get(token)
-
-    if not username:
-        return jsonify(error="Unauthorized"), 401
-
-    user = users.get(username)
-    return jsonify(username=username, is_admin=user["is_admin"])
+    return jsonify(error="Invalid credentials"), 401
 
 @app.route("/admin/data", methods=["GET"])
+@token_required
 def admin_data():
-    token = request.headers.get("Authorization")
-    username = sessions.get(token)
-
-    if not username:
-        return jsonify(error="Unauthorized"), 401
-
-    user = users.get(username)
-    if not user.get("is_admin"):
-        return jsonify(error="Access denied"), 403
-
+    if request.user["role"] != "admin":
+        return jsonify({"message": "Unauthorized"}), 403
     return jsonify(message="👑 Welcome to the Admin Dashboard!")
 
+@app.route("/user/profile", methods=["GET"])
+@token_required
+def user_profile():
+    return jsonify(username=request.user["username"], is_admin=(request.user["role"] == "admin"))
+
 @app.route("/transactions", methods=["GET"])
+@token_required
 def get_transactions():
     return jsonify([
         {"date": "2025-07-10", "amount": 5000},
@@ -99,12 +102,14 @@ def get_transactions():
     ])
 
 @app.route("/insights", methods=["GET"])
+@token_required
 def get_insights():
     return jsonify({
         "prediction": "You may exceed your weekly budget by ₦5,000."
     })
 
 @app.route("/chat", methods=["POST"])
+@token_required
 def chat():
     data = request.get_json()
     message = data.get("message", "").strip()
@@ -115,6 +120,7 @@ def chat():
     ai_reply = generate_response(message)
     return jsonify(reply=ai_reply), 200
 
+# OpenAI response generator
 def generate_response(message):
     try:
         response = openai.chat.completions.create(
