@@ -16,12 +16,11 @@ JWT_SECRET = os.getenv("JWT_SECRET") or "my-secret"  # Make sure to set in your 
 
 # Dummy user store (replace with DB in production)
 users = {
-    "Godwin": {
+    "admin@aifinance.com": {
         "password": "admin123",
-        "is_admin": True
+        "role": "admin"
     }
 }
-
 # JWT authentication decorator
 def token_required(f):
     @wraps(f)
