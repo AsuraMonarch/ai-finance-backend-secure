@@ -64,13 +64,13 @@ def signup():
 @app.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
-    username = data.get("username", "").strip()
+    email = data.get("email", "").strip()
     password = data.get("password", "").strip()
 
-    user = users.get(username)
+    user = users.get(email)
     if user and user["password"] == password:
         token = jwt.encode({
-            "username": username,
+            "username": email,
             "role": "admin" if user["is_admin"] else "user",
             "exp": datetime.datetime.utcnow() + datetime.timedelta(days=1)
         }, JWT_SECRET, algorithm="HS256")
