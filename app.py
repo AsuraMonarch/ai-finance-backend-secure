@@ -71,11 +71,11 @@ def login():
     if user and user["password"] == password:
         token = jwt.encode({
             "username": email,
-            "role": "admin" if user["is_admin"] else "user",
+            "role": user["role"],
             "exp": datetime.datetime.utcnow() + datetime.timedelta(days=1)
         }, JWT_SECRET, algorithm="HS256")
 
-        return jsonify(message="Login successful", token=token, is_admin=user["is_admin"])
+        return jsonify(message="Login successful", token=token, is_admin=(user["role"] == "admin"))
 
     return jsonify(error="Invalid credentials"), 401
 
